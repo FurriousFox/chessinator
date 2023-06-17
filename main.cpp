@@ -671,7 +671,7 @@ struct board {
 
                                 // if (!(pieces[rownumb][i].piece == 'k' && pieces[rownumb][i].color != piece.color))
 
-                                if (pieces[rownumb][i].piece != 'k' || pieces[rownumb][i].color == piece.color)
+                                if (!(pieces[rownumb][i].piece == 'k' && pieces[rownumb][i].color != piece.color))
                                     break;
                             }
                         } else {
@@ -703,7 +703,7 @@ struct board {
                                                  static_cast<unsigned int>(colnumb), static_cast<unsigned int>(rownumb),
                                                  static_cast<unsigned int>(i), .fap = {rownumb, i}});
 
-                                if (pieces[rownumb][i].piece != 'k' || pieces[rownumb][i].color == piece.color)
+                                if (!(pieces[rownumb][i].piece == 'k' && pieces[rownumb][i].color != piece.color))
                                     break;
                             }
                         } else {
@@ -735,7 +735,7 @@ struct board {
                                                  static_cast<unsigned int>(colnumb), static_cast<unsigned int>(i),
                                                  static_cast<unsigned int>(colnumb), .fap = {i, colnumb}});
 
-                                if (pieces[i][colnumb].piece != 'k' || pieces[rownumb][i].color == piece.color)
+                                if (!(pieces[i][colnumb].piece == 'k' && pieces[i][colnumb].color != piece.color))
                                     break;
                             }
                         } else {
@@ -767,7 +767,7 @@ struct board {
                                                  static_cast<unsigned int>(colnumb), static_cast<unsigned int>(i),
                                                  static_cast<unsigned int>(colnumb), .fap = {i, colnumb}});
 
-                                if (pieces[i][colnumb].piece != 'k' || pieces[rownumb][i].color == piece.color)
+                                if (!(pieces[i][colnumb].piece == 'k' && pieces[i][colnumb].color != piece.color))
                                     break;
                             }
                         } else {
@@ -806,8 +806,8 @@ struct board {
                                      static_cast<unsigned int>(rownumb + i), static_cast<unsigned int>(colnumb - i),
                                      .fap = {rownumb + i, colnumb - i}});
 
-                                if (pieces[rownumb + i][colnumb - i].piece != 'k' ||
-                                    pieces[rownumb][i].color == piece.color)
+                                if (!(pieces[rownumb + i][colnumb - i].piece == 'k' &&
+                                      pieces[rownumb + i][colnumb - i].color != piece.color))
                                     break;
                             }
                         } else {
@@ -840,8 +840,8 @@ struct board {
                                      static_cast<unsigned int>(rownumb - i), static_cast<unsigned int>(colnumb - i),
                                      .fap = {rownumb - i, colnumb - i}});
 
-                                if (pieces[rownumb - i][colnumb - i].piece != 'k' ||
-                                    pieces[rownumb][i].color == piece.color)
+                                if (!(pieces[rownumb - i][colnumb - i].piece == 'k' &&
+                                      pieces[rownumb - i][colnumb - i].color != piece.color))
                                     break;
                             }
                         } else {
@@ -874,8 +874,8 @@ struct board {
                                      static_cast<unsigned int>(rownumb + i), static_cast<unsigned int>(colnumb + i),
                                      .fap = {rownumb + i, colnumb + i}});
 
-                                if (pieces[rownumb + i][colnumb + i].piece != 'k' ||
-                                    pieces[rownumb][i].color == piece.color)
+                                if (!(pieces[rownumb + i][colnumb + i].piece == 'k' &&
+                                      pieces[rownumb + i][colnumb + i].color != piece.color))
                                     break;
                             }
                         } else {
@@ -908,8 +908,8 @@ struct board {
                                      static_cast<unsigned int>(rownumb - i), static_cast<unsigned int>(colnumb + i),
                                      .fap = {rownumb - i, colnumb + i}});
 
-                                if (pieces[rownumb - i][colnumb + i].piece != 'k' ||
-                                    pieces[rownumb][i].color == piece.color)
+                                if (!(pieces[rownumb - i][colnumb + i].piece == 'k' &&
+                                      pieces[rownumb - i][colnumb + i].color != piece.color))
                                     break;
                             }
                         } else {
@@ -1013,6 +1013,115 @@ struct board {
             return moveso;
 
         vector<::move> &moves = movesm;
+
+        // legality check
+        bool kingIsInCheck = false;
+        vector<tuple<int, int>> toselectPieces;
+        if (kingcol != -2) {
+            for (::move &move : moveso) {
+                if (move.attacking && move.torow == kingrow && move.tocol == kingcol) {
+                    toselectPieces.push_back({static_cast<int>(move.fromrow), static_cast<int>(move.fromcol)});
+
+                    kingIsInCheck = true;
+                    // break;
+                }
+            }
+        }
+
+        // for (::move &move : movesm) {
+        //     if (move.fromrow == 2 && move.fromcol == 5 && move.torow == 1 && move.tocol == 4) {
+        //         printMoveList(moveso);
+        //     }
+        // }
+
+        auto it = remove_if(moves.begin(), moves.end(), [&](::move &move) {
+            if (kingIsInCheck) {
+                if (move.piece->piece == 'k') {
+                    bool isIllegal = false;
+                    for (::move &movea : moveso) {
+                        if (movea.attacking && movea.torow == move.torow && movea.tocol == move.tocol) {
+                            isIllegal = true;
+                            break;
+                        }
+                    }
+
+                    return isIllegal;
+                } else {
+                    // make copy of board
+                    board boardc = *this;
+                    boardc.move(move);
+
+                    vector<::move> possibleMoves = boardc.possibleMoves(toselectPieces, true);
+
+                    vector<tuple<int, int>> fappers;
+                    for (::move &movea : moveso) {
+                        if (movea.fap[0] == move.fromrow && movea.fap[1] == move.fromcol) {
+                            fappers.push_back({static_cast<int>(movea.fromrow), static_cast<int>(movea.fromcol)});
+                        }
+                    }
+                    vector<::move> possibleMoves2 = boardc.possibleMoves(fappers, true);
+
+                    bool isIllegal = false;
+                    // cout << possibleMoves.size() << endl;
+                    for (::move &move : possibleMoves) {
+                        if (move.attacking && move.torow == kingrow && move.tocol == kingcol) {
+                            isIllegal = true;
+                            break;
+                        }
+                    };
+                    if (!isIllegal) {
+                        for (::move &move : possibleMoves2) {
+                            if (move.attacking && move.torow == kingrow && move.tocol == kingcol) {
+                                isIllegal = true;
+                                break;
+                            }
+                        };
+                    }
+
+                    return isIllegal;
+                }
+            } else {
+                if (move.piece->piece == 'k') {
+                    bool isIllegal = false;
+                    for (::move &movea : moveso) {
+                        if (movea.attacking && movea.torow == move.torow && movea.tocol == move.tocol) {
+                            isIllegal = true;
+                            break;
+                        }
+                    }
+
+                    return isIllegal;
+                } else {
+                    // make copy of board
+                    board boardc = *this;
+                    boardc.move(move);
+
+                    vector<tuple<int, int>> fappers;
+                    for (::move &movea : moveso) {
+                        if ((movea.fap[0] == move.fromrow && movea.fap[1] == move.fromcol) ||
+                            (move.enpassantcol != -2 && move.fromrow == movea.fap[0] && move.tocol == movea.fap[1])) {
+                            fappers.push_back({static_cast<int>(movea.fromrow), static_cast<int>(movea.fromcol)});
+                        }
+                    }
+                    // cout << fappers.size() << endl;
+
+                    vector<::move> possibleMoves = boardc.possibleMoves(fappers, true);
+
+                    bool isIllegal = false;
+                    // cout << possibleMoves.size() << endl << endl;
+                    for (::move &move : possibleMoves) {
+                        if (move.attacking && move.torow == kingrow && move.tocol == kingcol) {
+                            isIllegal = true;
+                            break;
+                        }
+                    };
+
+                    return isIllegal;
+                }
+            }
+        });
+        moves.erase(it, moves.end());
+
         // castling
         if (whosetomove) {
             // black
@@ -1131,114 +1240,6 @@ struct board {
                 }
             }
         }
-
-        // legality check
-        bool kingIsInCheck = false;
-        vector<tuple<int, int>> toselectPieces;
-        if (kingcol != -2) {
-            for (::move &move : moveso) {
-                if (move.attacking && move.torow == kingrow && move.tocol == kingcol) {
-                    toselectPieces.push_back({static_cast<int>(move.fromrow), static_cast<int>(move.fromcol)});
-
-                    kingIsInCheck = true;
-                    // break;
-                }
-            }
-        }
-
-        // for (::move &move : movesm) {
-        //     if (move.fromrow == 7 && move.fromcol == 2 && move.torow == 6 && move.tocol == 1) {
-        //         printMoveList(moveso);
-        //         cout << "kingIsInCheck: " << kingIsInCheck << endl << endl;
-        //     }
-        // }
-
-        auto it = remove_if(moves.begin(), moves.end(), [&](::move &move) {
-            if (kingIsInCheck) {
-                if (move.piece->piece == 'k') {
-                    bool isIllegal = false;
-                    for (::move &movea : moveso) {
-                        if (movea.attacking && movea.torow == move.torow && movea.tocol == move.tocol) {
-                            isIllegal = true;
-                            break;
-                        }
-                    }
-
-                    return isIllegal;
-                } else {
-                    // make copy of board
-                    board boardc = *this;
-                    boardc.move(move);
-
-                    vector<::move> possibleMoves = boardc.possibleMoves(toselectPieces, true);
-
-                    vector<tuple<int, int>> fappers;
-                    for (::move &movea : moveso) {
-                        if (movea.fap[0] == move.fromrow && movea.fap[1] == move.fromcol) {
-                            fappers.push_back({static_cast<int>(movea.fromrow), static_cast<int>(movea.fromcol)});
-                        }
-                    }
-                    vector<::move> possibleMoves2 = boardc.possibleMoves(fappers, true);
-
-                    bool isIllegal = false;
-                    // cout << possibleMoves.size() << endl;
-                    for (::move &move : possibleMoves) {
-                        if (move.attacking && move.torow == kingrow && move.tocol == kingcol) {
-                            isIllegal = true;
-                            break;
-                        }
-                    };
-                    if (!isIllegal) {
-                        for (::move &move : possibleMoves2) {
-                            if (move.attacking && move.torow == kingrow && move.tocol == kingcol) {
-                                isIllegal = true;
-                                break;
-                            }
-                        };
-                    }
-
-                    return isIllegal;
-                }
-            } else {
-                if (move.piece->piece == 'k') {
-                    bool isIllegal = false;
-                    for (::move &movea : moveso) {
-                        if (movea.attacking && movea.torow == move.torow && movea.tocol == move.tocol) {
-                            isIllegal = true;
-                            break;
-                        }
-                    }
-
-                    return isIllegal;
-                } else {
-                    // make copy of board
-                    board boardc = *this;
-                    boardc.move(move);
-
-                    vector<tuple<int, int>> fappers;
-                    for (::move &movea : moveso) {
-                        if (movea.fap[0] == move.fromrow && movea.fap[1] == move.fromcol) {
-                            fappers.push_back({static_cast<int>(movea.fromrow), static_cast<int>(movea.fromcol)});
-                        }
-                    }
-                    // cout << fappers.size() << endl;
-
-                    vector<::move> possibleMoves = boardc.possibleMoves(fappers, true);
-
-                    bool isIllegal = false;
-                    // cout << possibleMoves.size() << endl << endl;
-                    for (::move &move : possibleMoves) {
-                        if (move.attacking && move.torow == kingrow && move.tocol == kingcol) {
-                            isIllegal = true;
-                            break;
-                        }
-                    };
-
-                    return isIllegal;
-                }
-            }
-        });
-        moves.erase(it, moves.end());
 
         if (moves.size() == 0) {
             // cout << "0 moves!" << endl;
@@ -1650,7 +1651,7 @@ static void testPerft() {
         TIMED_CHECK(perft(pos3, 3), 2'812);
         TIMED_CHECK(perft(pos3, 4), 43'238);
         TIMED_CHECK(perft(pos3, 5), 674'624);
-        // TIMED_CHECK(perft(pos3, 6), 11'030'083);
+        TIMED_CHECK(perft(pos3, 6), 11'030'083);
         // TIMED_CHECK(perft(pos3, 7), 178'633'661);
         // TIMED_CHECK(perft(pos3, 8), 3'009'794'393); // unvalidated (michess)
     }
@@ -1662,7 +1663,7 @@ static void testPerft() {
             TIMED_CHECK(perft(pos4w, 2), 264);
             TIMED_CHECK(perft(pos4w, 3), 9'467);
             TIMED_CHECK(perft(pos4w, 4), 422'333);
-            // TIMED_CHECK(perft(pos4w, 5), 15'833'292);
+            TIMED_CHECK(perft(pos4w, 5), 15'833'292);
             // TIMED_CHECK(perft(pos4w, 6), 706'045'033); // sehe unvalidated (michess)
         }
         { // mirrored
@@ -1672,7 +1673,7 @@ static void testPerft() {
             TIMED_CHECK(perft(pos4b, 2), 264);
             TIMED_CHECK(perft(pos4b, 3), 9'467);
             TIMED_CHECK(perft(pos4b, 4), 422'333);
-            // TIMED_CHECK(perft(pos4b, 5), 15'833'292);
+            TIMED_CHECK(perft(pos4b, 5), 15'833'292);
             // TIMED_CHECK(perft(pos4b, 6), 706'045'033); // unvalidated (michess)
         }
     }
@@ -1683,7 +1684,7 @@ static void testPerft() {
         TIMED_CHECK(perft(pos5, 2), 1'486);
         TIMED_CHECK(perft(pos5, 3), 62'379);
         TIMED_CHECK(perft(pos5, 4), 2'103'487);
-        // TIMED_CHECK(perft(pos5, 5), 89'941'194);
+        TIMED_CHECK(perft(pos5, 5), 89'941'194);
     }
 }
 } // namespace sehe_tests
@@ -1693,8 +1694,6 @@ static int perft(board &b, unsigned depth, unsigned depth0) {
     switch (depth--) {
     case 0:
         return 1;
-    case 1:
-        return b.possibleMoves().size();
     }
 
     int n = 0;
@@ -1707,6 +1706,10 @@ static int perft(board &b, unsigned depth, unsigned depth0) {
         if (depth == depth0 - 1)
             cout << (char)(m.fromcol + 'a') << (char)(m.fromrow + '1') << (char)(m.tocol + 'a') << (char)(m.torow + '1')
                  << ": " << l << endl;
+    }
+
+    if (depth == 1) {
+        return b.possibleMoves().size();
     }
     return n;
 }
@@ -1815,14 +1818,17 @@ int main(int argc, char *argv[]) {
         // exit(EXIT_SUCCESS);
     } else {
         board.actuallyMove({&board.pieces[1][4], 1, 4, 3, 4, -2, -2, ' ', false, false, {-2, -2}, 0});
-        // board.loadfen("8/1K6/8/8/8/8/8/2k4R b - - 4 39");
-        board.draw();
+        // board.loadfen("8/2p5/3p4/KP5r/5p2/1R2PkP1/8/8 b - - 2 3");
+        // board.draw();
 
         // atomic<int> counter = 0;
         // auto start = chrono::steady_clock::now();
 
-        // ::move bestMove = board.findMoveDepth(depth, counter, 0, 0);
-        // // ::move bestMove = board.possibleMoves()[0];
+        // // ::move bestMove = board.findMoveDepth(depth, counter, 0, 0);
+        // cerr << endl << endl;
+        // auto pMoves = board.possibleMoves();
+        // board.printMoveList(pMoves);
+        // ::move bestMove = pMoves[0];
         // board.actuallyMove(bestMove);
 
         // cerr << fixed << setprecision(1)
@@ -1830,7 +1836,7 @@ int main(int argc, char *argv[]) {
         //      << "k positions per second" << endl
         //      << "(" << counter << " total)" << endl;
 
-        // board.draw();
+        board.draw();
 
         // exit(EXIT_SUCCESS);
     }
