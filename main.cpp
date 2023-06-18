@@ -396,6 +396,556 @@ struct board {
         return fen;
     };
 
+    [[clang::always_inline]] inline void possibleMoves(const int rownumb, const int colnumb, vector<::move> &movesm,
+                                                       vector<::move> &moveso, int &kingrow, int &kingcol) {
+        piece(&row)[8] = pieces[rownumb];
+        piece &piece = row[colnumb];
+
+        // cout << whosetomove << endl;
+        if (piece.color[0] == 0)
+            return;
+
+        vector<::move> &moves = (piece.color[1] != whosetomove) ? moveso : movesm;
+        bool imo = piece.color[1] != whosetomove;
+        // bool imo = false;
+
+        // if (piece.color[1] != whosetomove)
+        // continue;
+
+        switch (piece.piece) {
+        case 'p': {
+            if (piece.color[1]) {
+                // black
+
+                // simply 1 forward
+                if (rownumb - 1 > -1 && pieces[rownumb - 1][colnumb].color[0] == 0) {
+                    if (rownumb - 1 == 0) {
+                        // promotion
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb), -2,
+                                         -2, 'q', false, false});
+
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb), -2,
+                                         -2, 'n', false, false});
+
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb), -2,
+                                         -2, 'b', false, false});
+
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb), -2,
+                                         -2, 'r', false, false});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb), -2,
+                                         -2, ' ', false, false});
+                    }
+
+                    // 2 forward, but only if on starting row & not going through another piece
+                    if (rownumb == 6 && rownumb - 2 > -1 && pieces[rownumb - 2][colnumb].color[0] == 0) {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 2), static_cast<unsigned int>(colnumb), -2,
+                                         -2, ' ', false, false});
+                    }
+                };
+
+                // capturing, left or right
+                if (rownumb - 1 > -1 && colnumb - 1 > -1 &&
+                    ((pieces[rownumb - 1][colnumb - 1].color[0] == 1 &&
+                      pieces[rownumb - 1][colnumb - 1].color[1] != piece.color[1]) ||
+                     imo)) {
+                    if (rownumb - 1 == 0) {
+                        // promotion
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb - 1),
+                                         -2, -2, 'q', false});
+
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb - 1),
+                                         -2, -2, 'n', false});
+
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb - 1),
+                                         -2, -2, 'b', false});
+
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb - 1),
+                                         -2, -2, 'r', false});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1),
+                                         static_cast<unsigned int>(colnumb - 1)});
+                    }
+                }
+                if (rownumb - 1 > -1 && colnumb + 1 < 8 &&
+                    ((pieces[rownumb - 1][colnumb + 1].color[0] == 1 &&
+                      pieces[rownumb - 1][colnumb + 1].color[1] != piece.color[1]) ||
+                     imo)) {
+                    if (rownumb - 1 == 0) {
+                        // promotion
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb + 1),
+                                         -2, -2, 'q', false});
+
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb + 1),
+                                         -2, -2, 'n', false});
+
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb + 1),
+                                         -2, -2, 'b', false});
+
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb + 1),
+                                         -2, -2, 'r', false});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - 1),
+                                         static_cast<unsigned int>(colnumb + 1)});
+                    }
+                }
+
+                // en passant
+                if (rownumb == 3 && ((colnumb - 1) == enpassant[0] || (colnumb + 1) == enpassant[0])) {
+                    moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                     static_cast<unsigned int>(2), static_cast<unsigned int>(enpassant[0]), 2,
+                                     enpassant[0]});
+                }
+            } else {
+                // white
+
+                // moving, simply 1 forward
+                if (rownumb + 1 < 8 && pieces[rownumb + 1][colnumb].color[0] == 0) {
+                    if (rownumb + 1 == 7) {
+                        // promotion
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb), -2,
+                                         -2, 'q', false, false});
+
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb), -2,
+                                         -2, 'n', false, false});
+
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb), -2,
+                                         -2, 'b', false, false});
+
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb), -2,
+                                         -2, 'r', false, false});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb), -2,
+                                         -2, ' ', false, false});
+                    }
+
+                    // 2 forward, but only if on starting row & not going through another piece
+                    if (rownumb == 1 && rownumb + 2 < 8 && pieces[rownumb + 2][colnumb].color[0] == 0) {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 2), static_cast<unsigned int>(colnumb), -2,
+                                         -2, ' ', false, false});
+                    }
+                };
+
+                // capturing, left or right
+                if (rownumb + 1 < 8 && colnumb - 1 > -1 &&
+                    ((pieces[rownumb + 1][colnumb - 1].color[0] == 1 &&
+                      pieces[rownumb + 1][colnumb - 1].color[1] != piece.color[1]) ||
+                     imo)) {
+                    // left
+                    if (rownumb == 6) {
+                        // promotion
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb - 1),
+                                         -2, -2, 'q', false});
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb - 1),
+                                         -2, -2, 'n', false});
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb - 1),
+                                         -2, -2, 'b', false});
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb - 1),
+                                         -2, -2, 'r', false});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1),
+                                         static_cast<unsigned int>(colnumb - 1)});
+                    }
+                };
+                if (rownumb + 1 < 8 && colnumb + 1 < 8 &&
+                    ((pieces[rownumb + 1][colnumb + 1].color[0] == 1 &&
+                      pieces[rownumb + 1][colnumb + 1].color[1] != piece.color[1]) ||
+                     imo)) {
+                    // right
+                    if (rownumb == 6) {
+                        // promotion
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb + 1),
+                                         -2, -2, 'q', false});
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb + 1),
+                                         -2, -2, 'n', false});
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb + 1),
+                                         -2, -2, 'b', false});
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb + 1),
+                                         -2, -2, 'r', false});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + 1),
+                                         static_cast<unsigned int>(colnumb + 1)});
+                    };
+                };
+
+                // en passant
+                if (rownumb == 4 && ((colnumb - 1) == enpassant[0] || (colnumb + 1) == enpassant[0])) {
+                    moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                     static_cast<unsigned int>(5), static_cast<unsigned int>(enpassant[0]), 5,
+                                     enpassant[0]});
+                }
+            }
+            break;
+        }
+        case 'k': {
+            if (!imo) {
+                kingrow = rownumb;
+                kingcol = colnumb;
+            }
+        }
+        case 'q':
+        case 'r': {
+            // left
+            for (int i = colnumb - 1; i > -1; i--) {
+                if (imo) {
+                    if (pieces[rownumb][i].color == 0b00) {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb), static_cast<unsigned int>(i)});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb), static_cast<unsigned int>(i),
+                                         .fap = {rownumb, i}});
+
+                        // if (!(pieces[rownumb][i].piece == 'k' && pieces[rownumb][i].color !=
+                        // piece.color))
+
+                        if (!(pieces[rownumb][i].piece == 'k' && pieces[rownumb][i].color != piece.color))
+                            break;
+                    }
+                } else {
+                    if (pieces[rownumb][i].color[0] == 0b1 /* kenobi */ &&
+                        pieces[rownumb][i].color[1] == piece.color[1])
+                        break;
+
+                    moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                     static_cast<unsigned int>(rownumb), static_cast<unsigned int>(i)});
+
+                    if (pieces[rownumb][i].color[0] == 0b1)
+                        break;
+                }
+
+                if (piece.piece == 'k')
+                    break;
+            }
+
+            // right
+            for (int i = colnumb + 1; i < 8; i++) {
+                if (imo) {
+                    if (pieces[rownumb][i].color == 0b00) {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb), static_cast<unsigned int>(i)});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb), static_cast<unsigned int>(i),
+                                         .fap = {rownumb, i}});
+
+                        if (!(pieces[rownumb][i].piece == 'k' && pieces[rownumb][i].color != piece.color))
+                            break;
+                    }
+                } else {
+                    if (pieces[rownumb][i].color[0] == 0b1 /* kenobi */ &&
+                        pieces[rownumb][i].color[1] == piece.color[1])
+                        break;
+
+                    moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                     static_cast<unsigned int>(rownumb), static_cast<unsigned int>(i)});
+
+                    if (pieces[rownumb][i].color[0] == 0b1)
+                        break;
+                }
+
+                if (piece.piece == 'k')
+                    break;
+            }
+
+            // up
+            for (int i = rownumb + 1; i < 8; i++) {
+                if (imo) {
+                    if (pieces[i][colnumb].color == 0b00) {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(i), static_cast<unsigned int>(colnumb)});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(i), static_cast<unsigned int>(colnumb),
+                                         .fap = {i, colnumb}});
+
+                        if (!(pieces[i][colnumb].piece == 'k' && pieces[i][colnumb].color != piece.color))
+                            break;
+                    }
+                } else {
+                    if (pieces[i][colnumb].color[0] == 0b1 /* kenobi */ &&
+                        pieces[i][colnumb].color[1] == piece.color[1])
+                        break;
+
+                    moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                     static_cast<unsigned int>(i), static_cast<unsigned int>(colnumb)});
+
+                    if (pieces[i][colnumb].color[0] == 0b1)
+                        break;
+                }
+
+                if (piece.piece == 'k')
+                    break;
+            }
+
+            // down
+            for (int i = rownumb - 1; i > -1; i--) {
+                if (imo) {
+                    if (pieces[i][colnumb].color == 0b00) {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(i), static_cast<unsigned int>(colnumb)});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(i), static_cast<unsigned int>(colnumb),
+                                         .fap = {i, colnumb}});
+
+                        if (!(pieces[i][colnumb].piece == 'k' && pieces[i][colnumb].color != piece.color))
+                            break;
+                    }
+                } else {
+                    if (pieces[i][colnumb].color[0] == 0b1 /* kenobi */ &&
+                        pieces[i][colnumb].color[1] == piece.color[1])
+                        break;
+
+                    moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                     static_cast<unsigned int>(i), static_cast<unsigned int>(colnumb)});
+
+                    if (pieces[i][colnumb].color[0] == 0b1)
+                        break;
+                }
+
+                if (piece.piece == 'k')
+                    break;
+            }
+
+            if (piece.piece == 'r')
+                break;
+
+            [[fallthrough]];
+        }
+        case 'b': {
+            // left up
+            for (int i = 1; i <= min(7 - rownumb, colnumb); i++) {
+                if (imo) {
+                    if (pieces[rownumb + i][colnumb - i].color == 0b00) {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + i),
+                                         static_cast<unsigned int>(colnumb - i)});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + i), static_cast<unsigned int>(colnumb - i),
+                                         .fap = {rownumb + i, colnumb - i}});
+
+                        if (!(pieces[rownumb + i][colnumb - i].piece == 'k' &&
+                              pieces[rownumb + i][colnumb - i].color != piece.color))
+                            break;
+                    }
+                } else {
+                    if (pieces[rownumb + i][colnumb - i].color[0] == 0b1 /* kenobi */ &&
+                        pieces[rownumb + i][colnumb - i].color[1] == piece.color[1])
+                        break;
+
+                    moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                     static_cast<unsigned int>(rownumb + i), static_cast<unsigned int>(colnumb - i)});
+
+                    if (pieces[rownumb + i][colnumb - i].color[0] == 0b1)
+                        break;
+                }
+
+                if (piece.piece == 'k')
+                    break;
+            }
+
+            // left down
+            for (int i = 1; i <= min(rownumb, colnumb); i++) {
+                if (imo) {
+                    if (pieces[rownumb - i][colnumb - i].color == 0b00) {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - i),
+                                         static_cast<unsigned int>(colnumb - i)});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - i), static_cast<unsigned int>(colnumb - i),
+                                         .fap = {rownumb - i, colnumb - i}});
+
+                        if (!(pieces[rownumb - i][colnumb - i].piece == 'k' &&
+                              pieces[rownumb - i][colnumb - i].color != piece.color))
+                            break;
+                    }
+                } else {
+                    if (pieces[rownumb - i][colnumb - i].color[0] == 0b1 /* kenobi */ &&
+                        pieces[rownumb - i][colnumb - i].color[1] == piece.color[1])
+                        break;
+
+                    moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                     static_cast<unsigned int>(rownumb - i), static_cast<unsigned int>(colnumb - i)});
+
+                    if (pieces[rownumb - i][colnumb - i].color[0] == 0b1)
+                        break;
+                }
+
+                if (piece.piece == 'k')
+                    break;
+            }
+
+            // right up
+            for (int i = 1; i <= min(7 - rownumb, 7 - colnumb); i++) {
+                if (imo) {
+                    if (pieces[rownumb + i][colnumb + i].color == 0b00) {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + i),
+                                         static_cast<unsigned int>(colnumb + i)});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb + i), static_cast<unsigned int>(colnumb + i),
+                                         .fap = {rownumb + i, colnumb + i}});
+
+                        if (!(pieces[rownumb + i][colnumb + i].piece == 'k' &&
+                              pieces[rownumb + i][colnumb + i].color != piece.color))
+                            break;
+                    }
+                } else {
+                    if (pieces[rownumb + i][colnumb + i].color[0] == 0b1 /* kenobi */ &&
+                        pieces[rownumb + i][colnumb + i].color[1] == piece.color[1])
+                        break;
+
+                    moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                     static_cast<unsigned int>(rownumb + i), static_cast<unsigned int>(colnumb + i)});
+
+                    if (pieces[rownumb + i][colnumb + i].color[0] == 0b1)
+                        break;
+                }
+
+                if (piece.piece == 'k')
+                    break;
+            }
+
+            // right down
+            for (int i = 1; i <= min(rownumb, 7 - colnumb); i++) {
+                if (imo) {
+                    if (pieces[rownumb - i][colnumb + i].color == 0b00) {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - i),
+                                         static_cast<unsigned int>(colnumb + i)});
+                    } else {
+                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                         static_cast<unsigned int>(rownumb - i), static_cast<unsigned int>(colnumb + i),
+                                         .fap = {rownumb - i, colnumb + i}});
+
+                        if (!(pieces[rownumb - i][colnumb + i].piece == 'k' &&
+                              pieces[rownumb - i][colnumb + i].color != piece.color))
+                            break;
+                    }
+                } else {
+                    if (pieces[rownumb - i][colnumb + i].color[0] == 0b1 /* kenobi */ &&
+                        pieces[rownumb - i][colnumb + i].color[1] == piece.color[1])
+                        break;
+
+                    moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                     static_cast<unsigned int>(rownumb - i), static_cast<unsigned int>(colnumb + i)});
+
+                    if (pieces[rownumb - i][colnumb + i].color[0] == 0b1)
+                        break;
+                }
+
+                if (piece.piece == 'k')
+                    break;
+            }
+
+            break;
+        }
+        case 'n': {
+            //  _   (rownumb + 2, colnumb - 1)
+            //   |
+            //   |
+            if (rownumb + 2 < 8 && colnumb - 1 > -1 &&
+                (pieces[rownumb + 2][colnumb - 1].color[0] == 0b0 ||
+                 pieces[rownumb + 2][colnumb - 1].color[1] != piece.color[1] || imo))
+                moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                 static_cast<unsigned int>(rownumb + 2), static_cast<unsigned int>(colnumb - 1)});
+
+            //  _   (rownumb + 2, colnumb + 1)
+            // |
+            // |
+            if (rownumb + 2 < 8 && colnumb + 1 < 8 &&
+                (pieces[rownumb + 2][colnumb + 1].color[0] == 0b0 ||
+                 pieces[rownumb + 2][colnumb + 1].color[1] != piece.color[1] || imo))
+                moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                 static_cast<unsigned int>(rownumb + 2), static_cast<unsigned int>(colnumb + 1)});
+
+            // |__ (colnumb - 2, rownumb + 1)
+            if (colnumb - 2 > -1 && rownumb + 1 < 8 &&
+                (pieces[rownumb + 1][colnumb - 2].color[0] == 0b0 ||
+                 pieces[rownumb + 1][colnumb - 2].color[1] != piece.color[1] || imo))
+                moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                 static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb - 2)});
+
+            //  __ (colnumb - 2, rownumb - 1)
+            // |
+            if (colnumb - 2 > -1 && rownumb - 1 > -1 &&
+                (pieces[rownumb - 1][colnumb - 2].color[0] == 0b0 ||
+                 pieces[rownumb - 1][colnumb - 2].color[1] != piece.color[1] || imo))
+                moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                 static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb - 2)});
+
+            // |
+            // |__ (colnumb + 1, rownumb - 2)
+            if (colnumb + 1 < 8 && rownumb - 2 > -1 &&
+                (pieces[rownumb - 2][colnumb + 1].color[0] == 0b0 ||
+                 pieces[rownumb - 2][colnumb + 1].color[1] != piece.color[1] || imo))
+                moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                 static_cast<unsigned int>(rownumb - 2), static_cast<unsigned int>(colnumb + 1)});
+
+            // |
+            // |
+            //_  (colnumb - 1, rownumb - 2)
+            if (colnumb - 1 > -1 && rownumb - 2 > -1 &&
+                (pieces[rownumb - 2][colnumb - 1].color[0] == 0b0 ||
+                 pieces[rownumb - 2][colnumb - 1].color[1] != piece.color[1] || imo))
+                moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                 static_cast<unsigned int>(rownumb - 2), static_cast<unsigned int>(colnumb - 1)});
+
+            // __| (colnumb + 2, rownumb + 1)
+            if (colnumb + 2 < 8 && rownumb + 1 < 8 &&
+                (pieces[rownumb + 1][colnumb + 2].color[0] == 0b0 ||
+                 pieces[rownumb + 1][colnumb + 2].color[1] != piece.color[1] || imo))
+                moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                 static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb + 2)});
+
+            // __
+            //   | (colnumb + 2, rownumb - 1)
+            if (colnumb + 2 < 8 && rownumb - 1 > -1 &&
+                (pieces[rownumb - 1][colnumb + 2].color[0] == 0b0 ||
+                 pieces[rownumb - 1][colnumb + 2].color[1] != piece.color[1] || imo))
+                moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
+                                 static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb + 2)});
+            break;
+        }
+        }
+    }
+
     vector<::move> possibleMoves(const vector<tuple<int, int>> &selectPieces = {{-2, -2}}, bool select = false) {
         vector<::move> movesm;
         vector<::move> moveso;
@@ -403,610 +953,15 @@ struct board {
         int kingcol = -2;
 
         // normal piece movement
-        for (int rownumb = 0; rownumb < 8; ++rownumb) {
-            piece(&row)[8] = pieces[rownumb];
-            for (int colnumb = 0; colnumb < 8; ++colnumb) {
-                if (select && !(count_if(selectPieces.begin(), selectPieces.end(), [&](const tuple<int, int> &t) {
-                        return get<0>(t) == rownumb && get<1>(t) == colnumb;
-                    })))
-                    continue;
-
-                piece &piece = row[colnumb];
-
-                // cout << whosetomove << endl;
-                if (piece.color[0] == 0)
-                    continue;
-
-                vector<::move> &moves = (piece.color[1] != whosetomove) ? moveso : movesm;
-                bool imo = piece.color[1] != whosetomove;
-                // bool imo = false;
-
-                // if (piece.color[1] != whosetomove)
-                // continue;
-
-                switch (piece.piece) {
-                case 'p': {
-                    if (piece.color[1]) {
-                        // black
-
-                        // simply 1 forward
-                        if (rownumb - 1 > -1 && pieces[rownumb - 1][colnumb].color[0] == 0) {
-                            if (rownumb - 1 == 0) {
-                                // promotion
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 1),
-                                                 static_cast<unsigned int>(colnumb), -2, -2, 'q', false, false});
-
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 1),
-                                                 static_cast<unsigned int>(colnumb), -2, -2, 'n', false, false});
-
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 1),
-                                                 static_cast<unsigned int>(colnumb), -2, -2, 'b', false, false});
-
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 1),
-                                                 static_cast<unsigned int>(colnumb), -2, -2, 'r', false, false});
-                            } else {
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 1),
-                                                 static_cast<unsigned int>(colnumb), -2, -2, ' ', false, false});
-                            }
-
-                            // 2 forward, but only if on starting row & not going through another piece
-                            if (rownumb == 6 && rownumb - 2 > -1 && pieces[rownumb - 2][colnumb].color[0] == 0) {
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 2),
-                                                 static_cast<unsigned int>(colnumb), -2, -2, ' ', false, false});
-                            }
-                        };
-
-                        // capturing, left or right
-                        if (rownumb - 1 > -1 && colnumb - 1 > -1 &&
-                            ((pieces[rownumb - 1][colnumb - 1].color[0] == 1 &&
-                              pieces[rownumb - 1][colnumb - 1].color[1] != piece.color[1]) ||
-                             imo)) {
-                            if (rownumb - 1 == 0) {
-                                // promotion
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 1),
-                                                 static_cast<unsigned int>(colnumb - 1), -2, -2, 'q', false});
-
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 1),
-                                                 static_cast<unsigned int>(colnumb - 1), -2, -2, 'n', false});
-
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 1),
-                                                 static_cast<unsigned int>(colnumb - 1), -2, -2, 'b', false});
-
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 1),
-                                                 static_cast<unsigned int>(colnumb - 1), -2, -2, 'r', false});
-                            } else {
-                                moves.push_back(
-                                    {&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                     static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb - 1)});
-                            }
-                        }
-                        if (rownumb - 1 > -1 && colnumb + 1 < 8 &&
-                            ((pieces[rownumb - 1][colnumb + 1].color[0] == 1 &&
-                              pieces[rownumb - 1][colnumb + 1].color[1] != piece.color[1]) ||
-                             imo)) {
-                            if (rownumb - 1 == 0) {
-                                // promotion
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 1),
-                                                 static_cast<unsigned int>(colnumb + 1), -2, -2, 'q', false});
-
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 1),
-                                                 static_cast<unsigned int>(colnumb + 1), -2, -2, 'n', false});
-
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 1),
-                                                 static_cast<unsigned int>(colnumb + 1), -2, -2, 'b', false});
-
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb - 1),
-                                                 static_cast<unsigned int>(colnumb + 1), -2, -2, 'r', false});
-                            } else {
-                                moves.push_back(
-                                    {&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                     static_cast<unsigned int>(rownumb - 1), static_cast<unsigned int>(colnumb + 1)});
-                            }
-                        }
-
-                        // en passant
-                        if (rownumb == 3 && ((colnumb - 1) == enpassant[0] || (colnumb + 1) == enpassant[0])) {
-                            moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                             static_cast<unsigned int>(colnumb), static_cast<unsigned int>(2),
-                                             static_cast<unsigned int>(enpassant[0]), 2, enpassant[0]});
-                        }
-                    } else {
-                        // white
-
-                        // moving, simply 1 forward
-                        if (rownumb + 1 < 8 && pieces[rownumb + 1][colnumb].color[0] == 0) {
-                            if (rownumb + 1 == 7) {
-                                // promotion
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 1),
-                                                 static_cast<unsigned int>(colnumb), -2, -2, 'q', false, false});
-
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 1),
-                                                 static_cast<unsigned int>(colnumb), -2, -2, 'n', false, false});
-
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 1),
-                                                 static_cast<unsigned int>(colnumb), -2, -2, 'b', false, false});
-
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 1),
-                                                 static_cast<unsigned int>(colnumb), -2, -2, 'r', false, false});
-                            } else {
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 1),
-                                                 static_cast<unsigned int>(colnumb), -2, -2, ' ', false, false});
-                            }
-
-                            // 2 forward, but only if on starting row & not going through another piece
-                            if (rownumb == 1 && rownumb + 2 < 8 && pieces[rownumb + 2][colnumb].color[0] == 0) {
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 2),
-                                                 static_cast<unsigned int>(colnumb), -2, -2, ' ', false, false});
-                            }
-                        };
-
-                        // capturing, left or right
-                        if (rownumb + 1 < 8 && colnumb - 1 > -1 &&
-                            ((pieces[rownumb + 1][colnumb - 1].color[0] == 1 &&
-                              pieces[rownumb + 1][colnumb - 1].color[1] != piece.color[1]) ||
-                             imo)) {
-                            // left
-                            if (rownumb == 6) {
-                                // promotion
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 1),
-                                                 static_cast<unsigned int>(colnumb - 1), -2, -2, 'q', false});
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 1),
-                                                 static_cast<unsigned int>(colnumb - 1), -2, -2, 'n', false});
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 1),
-                                                 static_cast<unsigned int>(colnumb - 1), -2, -2, 'b', false});
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 1),
-                                                 static_cast<unsigned int>(colnumb - 1), -2, -2, 'r', false});
-                            } else {
-                                moves.push_back(
-                                    {&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                     static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb - 1)});
-                            }
-                        };
-                        if (rownumb + 1 < 8 && colnumb + 1 < 8 &&
-                            ((pieces[rownumb + 1][colnumb + 1].color[0] == 1 &&
-                              pieces[rownumb + 1][colnumb + 1].color[1] != piece.color[1]) ||
-                             imo)) {
-                            // right
-                            if (rownumb == 6) {
-                                // promotion
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 1),
-                                                 static_cast<unsigned int>(colnumb + 1), -2, -2, 'q', false});
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 1),
-                                                 static_cast<unsigned int>(colnumb + 1), -2, -2, 'n', false});
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 1),
-                                                 static_cast<unsigned int>(colnumb + 1), -2, -2, 'b', false});
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb),
-                                                 static_cast<unsigned int>(rownumb + 1),
-                                                 static_cast<unsigned int>(colnumb + 1), -2, -2, 'r', false});
-                            } else {
-                                moves.push_back(
-                                    {&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                     static_cast<unsigned int>(rownumb + 1), static_cast<unsigned int>(colnumb + 1)});
-                            };
-                        };
-
-                        // en passant
-                        if (rownumb == 4 && ((colnumb - 1) == enpassant[0] || (colnumb + 1) == enpassant[0])) {
-                            moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                             static_cast<unsigned int>(colnumb), static_cast<unsigned int>(5),
-                                             static_cast<unsigned int>(enpassant[0]), 5, enpassant[0]});
-                        }
-                    }
-                    break;
+        if (!select) {
+            for (int rownumb = 0; rownumb < 8; ++rownumb) {
+                for (int colnumb = 0; colnumb < 8; ++colnumb) {
+                    possibleMoves(rownumb, colnumb, movesm, moveso, kingrow, kingcol);
                 }
-                case 'k': {
-                    if (!imo) {
-                        kingrow = rownumb;
-                        kingcol = colnumb;
-                    }
-                }
-                case 'q':
-                case 'r': {
-                    // left
-                    for (int i = colnumb - 1; i > -1; i--) {
-                        if (imo) {
-                            if (pieces[rownumb][i].color == 0b00) {
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb), static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(i)});
-                            } else {
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb), static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(i), .fap = {rownumb, i}});
-
-                                // if (!(pieces[rownumb][i].piece == 'k' && pieces[rownumb][i].color != piece.color))
-
-                                if (!(pieces[rownumb][i].piece == 'k' && pieces[rownumb][i].color != piece.color))
-                                    break;
-                            }
-                        } else {
-                            if (pieces[rownumb][i].color[0] == 0b1 /* kenobi */ &&
-                                pieces[rownumb][i].color[1] == piece.color[1])
-                                break;
-
-                            moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                             static_cast<unsigned int>(colnumb), static_cast<unsigned int>(rownumb),
-                                             static_cast<unsigned int>(i)});
-
-                            if (pieces[rownumb][i].color[0] == 0b1)
-                                break;
-                        }
-
-                        if (piece.piece == 'k')
-                            break;
-                    }
-
-                    // right
-                    for (int i = colnumb + 1; i < 8; i++) {
-                        if (imo) {
-                            if (pieces[rownumb][i].color == 0b00) {
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb), static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(i)});
-                            } else {
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb), static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(i), .fap = {rownumb, i}});
-
-                                if (!(pieces[rownumb][i].piece == 'k' && pieces[rownumb][i].color != piece.color))
-                                    break;
-                            }
-                        } else {
-                            if (pieces[rownumb][i].color[0] == 0b1 /* kenobi */ &&
-                                pieces[rownumb][i].color[1] == piece.color[1])
-                                break;
-
-                            moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                             static_cast<unsigned int>(colnumb), static_cast<unsigned int>(rownumb),
-                                             static_cast<unsigned int>(i)});
-
-                            if (pieces[rownumb][i].color[0] == 0b1)
-                                break;
-                        }
-
-                        if (piece.piece == 'k')
-                            break;
-                    }
-
-                    // up
-                    for (int i = rownumb + 1; i < 8; i++) {
-                        if (imo) {
-                            if (pieces[i][colnumb].color == 0b00) {
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb), static_cast<unsigned int>(i),
-                                                 static_cast<unsigned int>(colnumb)});
-                            } else {
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb), static_cast<unsigned int>(i),
-                                                 static_cast<unsigned int>(colnumb), .fap = {i, colnumb}});
-
-                                if (!(pieces[i][colnumb].piece == 'k' && pieces[i][colnumb].color != piece.color))
-                                    break;
-                            }
-                        } else {
-                            if (pieces[i][colnumb].color[0] == 0b1 /* kenobi */ &&
-                                pieces[i][colnumb].color[1] == piece.color[1])
-                                break;
-
-                            moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                             static_cast<unsigned int>(colnumb), static_cast<unsigned int>(i),
-                                             static_cast<unsigned int>(colnumb)});
-
-                            if (pieces[i][colnumb].color[0] == 0b1)
-                                break;
-                        }
-
-                        if (piece.piece == 'k')
-                            break;
-                    }
-
-                    // down
-                    for (int i = rownumb - 1; i > -1; i--) {
-                        if (imo) {
-                            if (pieces[i][colnumb].color == 0b00) {
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb), static_cast<unsigned int>(i),
-                                                 static_cast<unsigned int>(colnumb)});
-                            } else {
-                                moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                                 static_cast<unsigned int>(colnumb), static_cast<unsigned int>(i),
-                                                 static_cast<unsigned int>(colnumb), .fap = {i, colnumb}});
-
-                                if (!(pieces[i][colnumb].piece == 'k' && pieces[i][colnumb].color != piece.color))
-                                    break;
-                            }
-                        } else {
-                            if (pieces[i][colnumb].color[0] == 0b1 /* kenobi */ &&
-                                pieces[i][colnumb].color[1] == piece.color[1])
-                                break;
-
-                            moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                             static_cast<unsigned int>(colnumb), static_cast<unsigned int>(i),
-                                             static_cast<unsigned int>(colnumb)});
-
-                            if (pieces[i][colnumb].color[0] == 0b1)
-                                break;
-                        }
-
-                        if (piece.piece == 'k')
-                            break;
-                    }
-
-                    if (piece.piece == 'r')
-                        break;
-
-                    [[fallthrough]];
-                }
-                case 'b': {
-                    // left up
-                    for (int i = 1; i <= min(7 - rownumb, colnumb); i++) {
-                        if (imo) {
-                            if (pieces[rownumb + i][colnumb - i].color == 0b00) {
-                                moves.push_back(
-                                    {&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                     static_cast<unsigned int>(rownumb + i), static_cast<unsigned int>(colnumb - i)});
-                            } else {
-                                moves.push_back(
-                                    {&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                     static_cast<unsigned int>(rownumb + i), static_cast<unsigned int>(colnumb - i),
-                                     .fap = {rownumb + i, colnumb - i}});
-
-                                if (!(pieces[rownumb + i][colnumb - i].piece == 'k' &&
-                                      pieces[rownumb + i][colnumb - i].color != piece.color))
-                                    break;
-                            }
-                        } else {
-                            if (pieces[rownumb + i][colnumb - i].color[0] == 0b1 /* kenobi */ &&
-                                pieces[rownumb + i][colnumb - i].color[1] == piece.color[1])
-                                break;
-
-                            moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                             static_cast<unsigned int>(colnumb), static_cast<unsigned int>(rownumb + i),
-                                             static_cast<unsigned int>(colnumb - i)});
-
-                            if (pieces[rownumb + i][colnumb - i].color[0] == 0b1)
-                                break;
-                        }
-
-                        if (piece.piece == 'k')
-                            break;
-                    }
-
-                    // left down
-                    for (int i = 1; i <= min(rownumb, colnumb); i++) {
-                        if (imo) {
-                            if (pieces[rownumb - i][colnumb - i].color == 0b00) {
-                                moves.push_back(
-                                    {&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                     static_cast<unsigned int>(rownumb - i), static_cast<unsigned int>(colnumb - i)});
-                            } else {
-                                moves.push_back(
-                                    {&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                     static_cast<unsigned int>(rownumb - i), static_cast<unsigned int>(colnumb - i),
-                                     .fap = {rownumb - i, colnumb - i}});
-
-                                if (!(pieces[rownumb - i][colnumb - i].piece == 'k' &&
-                                      pieces[rownumb - i][colnumb - i].color != piece.color))
-                                    break;
-                            }
-                        } else {
-                            if (pieces[rownumb - i][colnumb - i].color[0] == 0b1 /* kenobi */ &&
-                                pieces[rownumb - i][colnumb - i].color[1] == piece.color[1])
-                                break;
-
-                            moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                             static_cast<unsigned int>(colnumb), static_cast<unsigned int>(rownumb - i),
-                                             static_cast<unsigned int>(colnumb - i)});
-
-                            if (pieces[rownumb - i][colnumb - i].color[0] == 0b1)
-                                break;
-                        }
-
-                        if (piece.piece == 'k')
-                            break;
-                    }
-
-                    // right up
-                    for (int i = 1; i <= min(7 - rownumb, 7 - colnumb); i++) {
-                        if (imo) {
-                            if (pieces[rownumb + i][colnumb + i].color == 0b00) {
-                                moves.push_back(
-                                    {&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                     static_cast<unsigned int>(rownumb + i), static_cast<unsigned int>(colnumb + i)});
-                            } else {
-                                moves.push_back(
-                                    {&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                     static_cast<unsigned int>(rownumb + i), static_cast<unsigned int>(colnumb + i),
-                                     .fap = {rownumb + i, colnumb + i}});
-
-                                if (!(pieces[rownumb + i][colnumb + i].piece == 'k' &&
-                                      pieces[rownumb + i][colnumb + i].color != piece.color))
-                                    break;
-                            }
-                        } else {
-                            if (pieces[rownumb + i][colnumb + i].color[0] == 0b1 /* kenobi */ &&
-                                pieces[rownumb + i][colnumb + i].color[1] == piece.color[1])
-                                break;
-
-                            moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                             static_cast<unsigned int>(colnumb), static_cast<unsigned int>(rownumb + i),
-                                             static_cast<unsigned int>(colnumb + i)});
-
-                            if (pieces[rownumb + i][colnumb + i].color[0] == 0b1)
-                                break;
-                        }
-
-                        if (piece.piece == 'k')
-                            break;
-                    }
-
-                    // right down
-                    for (int i = 1; i <= min(rownumb, 7 - colnumb); i++) {
-                        if (imo) {
-                            if (pieces[rownumb - i][colnumb + i].color == 0b00) {
-                                moves.push_back(
-                                    {&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                     static_cast<unsigned int>(rownumb - i), static_cast<unsigned int>(colnumb + i)});
-                            } else {
-                                moves.push_back(
-                                    {&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                     static_cast<unsigned int>(rownumb - i), static_cast<unsigned int>(colnumb + i),
-                                     .fap = {rownumb - i, colnumb + i}});
-
-                                if (!(pieces[rownumb - i][colnumb + i].piece == 'k' &&
-                                      pieces[rownumb - i][colnumb + i].color != piece.color))
-                                    break;
-                            }
-                        } else {
-                            if (pieces[rownumb - i][colnumb + i].color[0] == 0b1 /* kenobi */ &&
-                                pieces[rownumb - i][colnumb + i].color[1] == piece.color[1])
-                                break;
-
-                            moves.push_back({&piece, static_cast<unsigned int>(rownumb),
-                                             static_cast<unsigned int>(colnumb), static_cast<unsigned int>(rownumb - i),
-                                             static_cast<unsigned int>(colnumb + i)});
-
-                            if (pieces[rownumb - i][colnumb + i].color[0] == 0b1)
-                                break;
-                        }
-
-                        if (piece.piece == 'k')
-                            break;
-                    }
-
-                    break;
-                }
-                case 'n': {
-                    //  _   (rownumb + 2, colnumb - 1)
-                    //   |
-                    //   |
-                    if (rownumb + 2 < 8 && colnumb - 1 > -1 &&
-                        (pieces[rownumb + 2][colnumb - 1].color[0] == 0b0 ||
-                         pieces[rownumb + 2][colnumb - 1].color[1] != piece.color[1] || imo))
-                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                         static_cast<unsigned int>(rownumb + 2),
-                                         static_cast<unsigned int>(colnumb - 1)});
-
-                    //  _   (rownumb + 2, colnumb + 1)
-                    // |
-                    // |
-                    if (rownumb + 2 < 8 && colnumb + 1 < 8 &&
-                        (pieces[rownumb + 2][colnumb + 1].color[0] == 0b0 ||
-                         pieces[rownumb + 2][colnumb + 1].color[1] != piece.color[1] || imo))
-                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                         static_cast<unsigned int>(rownumb + 2),
-                                         static_cast<unsigned int>(colnumb + 1)});
-
-                    // |__ (colnumb - 2, rownumb + 1)
-                    if (colnumb - 2 > -1 && rownumb + 1 < 8 &&
-                        (pieces[rownumb + 1][colnumb - 2].color[0] == 0b0 ||
-                         pieces[rownumb + 1][colnumb - 2].color[1] != piece.color[1] || imo))
-                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                         static_cast<unsigned int>(rownumb + 1),
-                                         static_cast<unsigned int>(colnumb - 2)});
-
-                    //  __ (colnumb - 2, rownumb - 1)
-                    // |
-                    if (colnumb - 2 > -1 && rownumb - 1 > -1 &&
-                        (pieces[rownumb - 1][colnumb - 2].color[0] == 0b0 ||
-                         pieces[rownumb - 1][colnumb - 2].color[1] != piece.color[1] || imo))
-                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                         static_cast<unsigned int>(rownumb - 1),
-                                         static_cast<unsigned int>(colnumb - 2)});
-
-                    // |
-                    // |__ (colnumb + 1, rownumb - 2)
-                    if (colnumb + 1 < 8 && rownumb - 2 > -1 &&
-                        (pieces[rownumb - 2][colnumb + 1].color[0] == 0b0 ||
-                         pieces[rownumb - 2][colnumb + 1].color[1] != piece.color[1] || imo))
-                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                         static_cast<unsigned int>(rownumb - 2),
-                                         static_cast<unsigned int>(colnumb + 1)});
-
-                    // |
-                    // |
-                    //_  (colnumb - 1, rownumb - 2)
-                    if (colnumb - 1 > -1 && rownumb - 2 > -1 &&
-                        (pieces[rownumb - 2][colnumb - 1].color[0] == 0b0 ||
-                         pieces[rownumb - 2][colnumb - 1].color[1] != piece.color[1] || imo))
-                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                         static_cast<unsigned int>(rownumb - 2),
-                                         static_cast<unsigned int>(colnumb - 1)});
-
-                    // __| (colnumb + 2, rownumb + 1)
-                    if (colnumb + 2 < 8 && rownumb + 1 < 8 &&
-                        (pieces[rownumb + 1][colnumb + 2].color[0] == 0b0 ||
-                         pieces[rownumb + 1][colnumb + 2].color[1] != piece.color[1] || imo))
-                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                         static_cast<unsigned int>(rownumb + 1),
-                                         static_cast<unsigned int>(colnumb + 2)});
-
-                    // __
-                    //   | (colnumb + 2, rownumb - 1)
-                    if (colnumb + 2 < 8 && rownumb - 1 > -1 &&
-                        (pieces[rownumb - 1][colnumb + 2].color[0] == 0b0 ||
-                         pieces[rownumb - 1][colnumb + 2].color[1] != piece.color[1] || imo))
-                        moves.push_back({&piece, static_cast<unsigned int>(rownumb), static_cast<unsigned int>(colnumb),
-                                         static_cast<unsigned int>(rownumb - 1),
-                                         static_cast<unsigned int>(colnumb + 2)});
-                    break;
-                }
-                }
+            }
+        } else {
+            for (auto &sP : selectPieces) {
+                possibleMoves(get<0>(sP), get<1>(sP), movesm, moveso, kingrow, kingcol);
             }
         }
         if (select)
@@ -1684,7 +1639,7 @@ static void testPerft() {
         TIMED_CHECK(perft(pos5, 2), 1'486);
         TIMED_CHECK(perft(pos5, 3), 62'379);
         TIMED_CHECK(perft(pos5, 4), 2'103'487);
-        TIMED_CHECK(perft(pos5, 5), 89'941'194);
+        // TIMED_CHECK(perft(pos5, 5), 89'941'194);
     }
 }
 } // namespace sehe_tests

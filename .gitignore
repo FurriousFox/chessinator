@@ -1,4 +1,5 @@
 illegs.json
 *.exe
+*.capture
 !inotifywait.exe
 je suis confuis/*

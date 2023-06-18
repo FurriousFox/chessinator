@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        "xstring": "cpp",
+        "algorithm": "cpp",
+        "tuple": "cpp",
+        "vector": "cpp"
+    }
+}

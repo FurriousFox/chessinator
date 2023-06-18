@@ -1,0 +1,16 @@
+add caching (non-threaded)
+try to make caching threaded
+
+
+
+
+
+10%:
+instead of for every piece check if it's a selectedPiece:
+if (select && !(count_if(selectPieces.begin(), selectPieces.end(), [&](const tuple<int, int> &t) {
+    return get<0>(t) == rownumb && get<1>(t) == colnumb;
+}))) continue;
+
+do:
+*for each in selectPiece, generate moves for that*
+
