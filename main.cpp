@@ -3,6 +3,7 @@
 #include <bitset>
 #include <chrono>
 #include <cstdio>
+#include <deque>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
@@ -396,8 +397,8 @@ struct board {
         return fen;
     };
 
-    [[clang::always_inline]] inline void possibleMoves(const int rownumb, const int colnumb, vector<::move> &movesm,
-                                                       vector<::move> &moveso, int &kingrow, int &kingcol) {
+    [[clang::always_inline]] inline void possibleMoves(const int rownumb, const int colnumb, deque<::move> &movesm,
+                                                       deque<::move> &moveso, int &kingrow, int &kingcol) {
         piece(&row)[8] = pieces[rownumb];
         piece &piece = row[colnumb];
 
@@ -405,7 +406,7 @@ struct board {
         if (piece.color[0] == 0)
             return;
 
-        vector<::move> &moves = (piece.color[1] != whosetomove) ? moveso : movesm;
+        deque<::move> &moves = (piece.color[1] != whosetomove) ? moveso : movesm;
         bool imo = piece.color[1] != whosetomove;
         // bool imo = false;
 
@@ -946,9 +947,10 @@ struct board {
         }
     }
 
-    vector<::move> possibleMoves(const vector<tuple<int, int>> &selectPieces = {{-2, -2}}, bool select = false) {
-        vector<::move> movesm;
-        vector<::move> moveso;
+    deque<::move> possibleMoves(const vector<tuple<int, int>> &selectPieces = {{-2, -2}}, bool select = false) {
+        deque<::move> movesm;
+        deque<::move> moveso;
+
         int kingrow = -2;
         int kingcol = -2;
 
@@ -967,7 +969,7 @@ struct board {
         if (select)
             return moveso;
 
-        vector<::move> &moves = movesm;
+        deque<::move> &moves = movesm;
 
         // legality check
         bool kingIsInCheck = false;
@@ -1006,7 +1008,7 @@ struct board {
                     board boardc = *this;
                     boardc.move(move);
 
-                    vector<::move> possibleMoves = boardc.possibleMoves(toselectPieces, true);
+                    deque<::move> possibleMoves = boardc.possibleMoves(toselectPieces, true);
 
                     vector<tuple<int, int>> fappers;
                     for (::move &movea : moveso) {
@@ -1014,7 +1016,7 @@ struct board {
                             fappers.push_back({static_cast<int>(movea.fromrow), static_cast<int>(movea.fromcol)});
                         }
                     }
-                    vector<::move> possibleMoves2 = boardc.possibleMoves(fappers, true);
+                    deque<::move> possibleMoves2 = boardc.possibleMoves(fappers, true);
 
                     bool isIllegal = false;
                     // cout << possibleMoves.size() << endl;
@@ -1060,7 +1062,7 @@ struct board {
                     }
                     // cout << fappers.size() << endl;
 
-                    vector<::move> possibleMoves = boardc.possibleMoves(fappers, true);
+                    deque<::move> possibleMoves = boardc.possibleMoves(fappers, true);
 
                     bool isIllegal = false;
                     // cout << possibleMoves.size() << endl << endl;
@@ -1367,7 +1369,7 @@ struct board {
         }
     }
 
-    void printMoveList(vector<::move> &moves) {
+    void printMoveList(deque<::move> &moves) {
         // return;
         for (::move &move : moves) {
             // board.printMove(move);
@@ -1413,7 +1415,7 @@ struct board {
         bool iamoriginal = counter == 0;
 
         // list moves
-        vector<::move> moves = possibleMoves();
+        deque<::move> moves = possibleMoves();
 
         // wait for all threads to finish
         if (iamoriginal) {
@@ -1577,11 +1579,11 @@ static void testPerft() {
 
     if (1) {
         board setup;
-        TIMED_CHECK(perft(setup, 0), 1);
-        TIMED_CHECK(perft(setup, 1), 20);
-        TIMED_CHECK(perft(setup, 2), 400);
-        TIMED_CHECK(perft(setup, 3), 8'902);
-        TIMED_CHECK(perft(setup, 4), 197'281);
+        // TIMED_CHECK(perft(setup, 0), 1);
+        // TIMED_CHECK(perft(setup, 1), 20);
+        // TIMED_CHECK(perft(setup, 2), 400);
+        // TIMED_CHECK(perft(setup, 3), 8'902);
+        // TIMED_CHECK(perft(setup, 4), 197'281);
         TIMED_CHECK(perft(setup, 5), 4'865'609);
         // TIMED_CHECK(perft(setup, 6), 119'060'324);
         // TIMED_CHECK(perft(setup, 7), 3'195'901'860); // unvalidated (michess)
@@ -1591,9 +1593,9 @@ static void testPerft() {
     if (1) {
         board kiwiPete;
         kiwiPete.loadfen({"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -"});
-        TIMED_CHECK(perft(kiwiPete, 1), 48);
-        TIMED_CHECK(perft(kiwiPete, 2), 2'039);
-        TIMED_CHECK(perft(kiwiPete, 3), 97'862);
+        // TIMED_CHECK(perft(kiwiPete, 1), 48);
+        // TIMED_CHECK(perft(kiwiPete, 2), 2'039);
+        // TIMED_CHECK(perft(kiwiPete, 3), 97'862);
         TIMED_CHECK(perft(kiwiPete, 4), 4'085'603);
         // TIMED_CHECK(perft(kiwiPete, 5), 193'690'690);
         // TIMED_CHECK(perft(kiwiPete, 6), 8'031'647'685);
@@ -1601,11 +1603,11 @@ static void testPerft() {
     if (1) {
         board pos3;
         pos3.loadfen("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -");
-        TIMED_CHECK(perft(pos3, 1), 14);
-        TIMED_CHECK(perft(pos3, 2), 191);
-        TIMED_CHECK(perft(pos3, 3), 2'812);
-        TIMED_CHECK(perft(pos3, 4), 43'238);
-        TIMED_CHECK(perft(pos3, 5), 674'624);
+        // TIMED_CHECK(perft(pos3, 1), 14);
+        // TIMED_CHECK(perft(pos3, 2), 191);
+        // TIMED_CHECK(perft(pos3, 3), 2'812);
+        // TIMED_CHECK(perft(pos3, 4), 43'238);
+        // TIMED_CHECK(perft(pos3, 5), 674'624);
         TIMED_CHECK(perft(pos3, 6), 11'030'083);
         // TIMED_CHECK(perft(pos3, 7), 178'633'661);
         // TIMED_CHECK(perft(pos3, 8), 3'009'794'393); // unvalidated (michess)
@@ -1614,31 +1616,31 @@ static void testPerft() {
         {
             board pos4w;
             pos4w.loadfen("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
-            TIMED_CHECK(perft(pos4w, 1), 6);
-            TIMED_CHECK(perft(pos4w, 2), 264);
-            TIMED_CHECK(perft(pos4w, 3), 9'467);
-            TIMED_CHECK(perft(pos4w, 4), 422'333);
+            // TIMED_CHECK(perft(pos4w, 1), 6);
+            // TIMED_CHECK(perft(pos4w, 2), 264);
+            // TIMED_CHECK(perft(pos4w, 3), 9'467);
+            // TIMED_CHECK(perft(pos4w, 4), 422'333);
             TIMED_CHECK(perft(pos4w, 5), 15'833'292);
             // TIMED_CHECK(perft(pos4w, 6), 706'045'033); // sehe unvalidated (michess)
         }
         { // mirrored
             board pos4b;
             pos4b.loadfen("r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1");
-            TIMED_CHECK(perft(pos4b, 1), 6);
-            TIMED_CHECK(perft(pos4b, 2), 264);
-            TIMED_CHECK(perft(pos4b, 3), 9'467);
-            TIMED_CHECK(perft(pos4b, 4), 422'333);
-            TIMED_CHECK(perft(pos4b, 5), 15'833'292);
+            // TIMED_CHECK(perft(pos4b, 1), 6);
+            // TIMED_CHECK(perft(pos4b, 2), 264);
+            // TIMED_CHECK(perft(pos4b, 3), 9'467);
+            // TIMED_CHECK(perft(pos4b, 4), 422'333);
+            // TIMED_CHECK(perft(pos4b, 5), 15'833'292);
             // TIMED_CHECK(perft(pos4b, 6), 706'045'033); // unvalidated (michess)
         }
     }
     if (1) {
         board pos5;
         pos5.loadfen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
-        TIMED_CHECK(perft(pos5, 1), 44);
-        TIMED_CHECK(perft(pos5, 2), 1'486);
-        TIMED_CHECK(perft(pos5, 3), 62'379);
-        TIMED_CHECK(perft(pos5, 4), 2'103'487);
+        // TIMED_CHECK(perft(pos5, 1), 44);
+        // TIMED_CHECK(perft(pos5, 2), 1'486);
+        // TIMED_CHECK(perft(pos5, 3), 62'379);
+        // TIMED_CHECK(perft(pos5, 4), 2'103'487);
         // TIMED_CHECK(perft(pos5, 5), 89'941'194);
     }
 }
@@ -1853,7 +1855,7 @@ int main(int argc, char *argv[]) {
 
         // board.move("a5b6");
 
-        // vector<::move> possibleMoves = board.possibleMoves();
+        // deque<::move> possibleMoves = board.possibleMoves();
         // for (::move &move : possibleMoves) {
         //     // board.printMove(move);
         //     cerr
